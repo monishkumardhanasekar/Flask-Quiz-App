@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="quiz-box">
+
+  <div class="top-row">
+    <div>
+      Question {{ index + 1 }} / {{ total }}
+    </div>
+    <div>
+      Category: {{ attempt.category.name }}
+    </div>
+  </div>
+
+  <div class="progress-wrapper">
+    <div class="progress-text">Answered {{ answered_count }} of {{ total }}</div>
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progress_percent }}">
+      <div class="progress-bar" style="width: {{ progress_percent }}%"></div>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="flash">
+    <div class="flash-item error">{{ error }}</div>
+  </div>
+  {% endif %}
+
+  <h2 class="prompt">
+    {{ question.prompt }}
+  </h2>
+
+  <form method="POST">
+
+    {% for key, text in options %}
+      <label class="option">
+        <input
+          type="radio"
+          name="choice"
+          value="{{ key }}"
+          {% if selected == key %}checked{% endif %}
+        >
+        <span class="option-key">{{ key }})</span>
+        <span class="option-text">{{ text }}</span>
+      </label>
+    {% endfor %}
+
+    <div class="buttons">
+      <button
+        type="submit"
+        name="action"
+        value="prev"
+        {% if index == 0 %}disabled{% endif %}
+      >
+        Previous
+      </button>
+
+      {% if is_last %}
+        <button type="submit" name="action" value="submit">
+          Submit
+        </button>
+      {% else %}
+        <button type="submit" name="action" value="next">
+          Next
+        </button>
+      {% endif %}
+    </div>
+
+  </form>
+
+  <!-- Return to Home -->
+  <div style="margin-top: 20px;">
+    <a class="link" href="{{ url_for('main.home') }}">Return to Home</a>
+  </div>
+
+</div>
+
+{% endblock %}

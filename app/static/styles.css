@@ -1,0 +1,318 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #eee;
+  margin: 0;
+}
+
+a {
+  color: #9ad;
+  text-decoration: none;
+}
+
+.container {
+  width: 900px;
+  max-width: 92%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.header nav a {
+  margin-left: 12px;
+}
+.cards {
+  display: grid;
+  /* responsive grid: auto-fit columns with a sensible min width */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: #1b1b1b;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #2b2b2b;
+}
+
+button {
+  background: #2d6cdf;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #444;
+  cursor: not-allowed;
+}
+
+.quiz-box {
+  background: #1b1b1b;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid #2b2b2b;
+}
+
+.progress-wrapper {
+  margin-top: 12px;
+}
+
+.progress-text {
+  color: #bbb;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.progress {
+  width: 100%;
+  height: 10px;
+  background: #141414;
+  border: 1px solid #2b2b2b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2d6cdf, #5aa2ff);
+  width: 0%;
+  transition: width 300ms ease;
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  color: #bbb;
+  margin-bottom: 10px;
+}
+
+.prompt {
+  margin-top: 6px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #141414;
+  margin: 10px 0;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #2b2b2b;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Accessibility and mobile-friendly tweaks */
+button {
+  padding: 12px 16px;
+}
+
+button:focus,
+.option:focus {
+  outline: 3px solid rgba(45, 108, 223, 0.25);
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments for smaller viewports */
+@media (max-width: 700px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header nav {
+    width: 100%;
+  }
+
+  .header nav a {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 12px;
+  }
+  .top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .prompt {
+    font-size: 16px;
+  }
+
+  .option {
+    padding: 16px;
+    font-size: 15px;
+  }
+
+  .progress {
+    height: 12px;
+  }
+}
+
+/* Smaller progress bar for lists */
+.cards .card .progress {
+  height: 8px;
+}
+
+@media (max-width: 420px) {
+  /* Slightly larger touch targets on very small screens */
+  .option {
+    padding: 16px;
+  }
+
+  button {
+    font-size: 16px;
+  }
+}
+
+.flash {
+  margin: 10px 0 20px 0;
+}
+.flash-item {
+  background: #3a2d00;
+  border: 1px solid #6d5200;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* auto-dismiss flash: visible for ~5s then fade and collapse (no JS) */
+.flash-item.auto-dismiss {
+  /* keep visible for the full duration, then jump to hidden state instantly */
+  animation: flashAutoDismiss 5s steps(1, end) forwards;
+}
+
+@keyframes flashAutoDismiss {
+  /* 0%..99.999%: fully visible; 100%: hidden (instant jump) */
+  0% {
+    opacity: 1;
+    max-height: 200px;
+    margin-bottom: 10px;
+    padding: 10px;
+    visibility: visible;
+  }
+  99.999% {
+    opacity: 1;
+    max-height: 200px;
+    margin-bottom: 10px;
+    padding: 10px;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    visibility: hidden;
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1b1b1b;
+  border: 1px solid #2b2b2b;
+}
+
+.table th,
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #2b2b2b;
+  text-align: left;
+}
+
+/* Make wide tables horizontally scrollable on narrow viewports */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Convert table to stacked cards on small screens */
+@media (max-width: 700px) {
+  .table {
+    border: 0;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    display: block;
+    margin-bottom: 12px;
+    background: #141414;
+    border: 1px solid #2b2b2b;
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    color: #bbb;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+}
+
+.score {
+  font-size: 18px;
+}
+
+.result-list {
+  margin-top: 10px;
+}
+.result-item {
+  background: #141414;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #2b2b2b;
+  margin-bottom: 10px;
+}
+
+.qtext {
+  margin-bottom: 6px;
+}
+
+.ok {
+  color: #7cfc98;
+  font-weight: bold;
+}
+.bad {
+  color: #ff7f7f;
+  font-weight: bold;
+}

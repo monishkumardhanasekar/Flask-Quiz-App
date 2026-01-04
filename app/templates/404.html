@@ -1,0 +1,5 @@
+{% extends "base.html" %} {% block content %}
+<h2>Page not found</h2>
+<p>The page you’re trying to access doesn’t exist.</p>
+<a class="link" href="{{ url_for('main.home') }}">Return to Home</a>
+{% endblock %}

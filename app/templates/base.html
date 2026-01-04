@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Quiz App</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>
+          <a href="{{ url_for('main.home') }}">Quiz App</a>
+        </h1>
+
+        <nav>
+          <a href="{{ url_for('history.history') }}">History</a>
+        </nav>
+      </header>
+
+      {# show notice passed via query params (no sessions/flash required) #} {%
+      if request.args.get('notice') %}
+      <div class="flash" aria-live="polite">
+        <div class="flash-item {{ request.args.get('notice_category','') }}">
+          {{ request.args.get('notice') }}
+        </div>
+      </div>
+      {% endif %} {% with messages = get_flashed_messages(with_categories=True)
+      %} {% if messages %}
+      <div class="flash" aria-live="polite">
+        {% for category, msg in messages %}
+        <div class="flash-item {% if category %}{{ category }}{% endif %}">
+          {{ msg }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %} {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>
