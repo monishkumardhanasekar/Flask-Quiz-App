@@ -1,0 +1,102 @@
+{% extends "base.html" %} {% block content %}
+<div style="max-width: 400px; margin: 40px auto">
+  <h2>Login</h2>
+  <form id="loginForm" class="card" style="margin-top: 20px">
+    <div style="margin-bottom: 16px">
+      <label for="email" style="display: block; margin-bottom: 6px">Email:</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        style="
+          width: 100%;
+          padding: 10px;
+          border-radius: 8px;
+          border: 1px solid #2b2b2b;
+          background: #141414;
+          color: #eee;
+          box-sizing: border-box;
+        "
+      />
+    </div>
+    <div style="margin-bottom: 16px">
+      <label for="password" style="display: block; margin-bottom: 6px">Password:</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
+        style="
+          width: 100%;
+          padding: 10px;
+          border-radius: 8px;
+          border: 1px solid #2b2b2b;
+          background: #141414;
+          color: #eee;
+          box-sizing: border-box;
+        "
+      />
+    </div>
+    <div id="error" style="color: #ff7f7f; margin-bottom: 12px; display: none"></div>
+    <button type="submit" style="width: 100%">Login</button>
+    <div style="margin-top: 16px; text-align: center; color: #bbb">
+      Don't have an account?
+      <a href="{{ url_for('auth.register') }}">Register here</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorDiv = document.getElementById('error');
+    errorDiv.style.display = 'none';
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+      const response = await fetch('http://localhost:8080/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        errorDiv.textContent = data.error || 'Login failed';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      // Store JWT token
+      localStorage.setItem('jwt_token', data.token);
+      
+      // Set Flask session with user_id (for server-side rendering)
+      try {
+        await fetch('/set-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: data.token })
+        });
+      } catch (err) {
+        console.error('Failed to set session:', err);
+      }
+      
+      // Update user display (if function exists)
+      if (typeof updateUserDisplay === 'function') {
+        updateUserDisplay();
+      }
+      
+      // Redirect to home
+      window.location.href = '/home';
+    } catch (err) {
+      errorDiv.textContent = 'Network error. Please try again.';
+      errorDiv.style.display = 'block';
+    }
+  });
+</script>
+{% endblock %}
+

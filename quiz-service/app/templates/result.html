@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block content %}
+
+<h2>Quiz Result: #{{ attempt.id }}</h2>
+<p class="score">Score: {{ score }} / {{ total }}</p>
+
+<div class="result-list">
+  {% for item in details %}
+  <div class="result-item">
+    <div class="qtext">{{ loop.index }}. {{ item.question.prompt }}</div>
+
+    <div>
+      Your answer:
+      <b>{{ item.chosen_key }}) {{ item.chosen_text }}</b>
+    </div>
+
+    {% if not item.is_correct %}
+    <div>
+      Correct answer:
+      <b>{{ item.correct_key }}) {{ item.correct_text }}</b>
+    </div>
+    {% endif %}
+
+    <div class="{% if item.is_correct %}ok{% else %}bad{% endif %}">
+      {% if item.is_correct %}Correct{% else %}Wrong{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div style="margin-top: 20px">
+  <a class="link" href="{{ url_for('main.home') }}">Return to Home</a>
+</div>
+{% endblock %}

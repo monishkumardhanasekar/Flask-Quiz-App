@@ -1,0 +1,6 @@
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+pymysql
+cryptography
+python-dotenv
+PyJWT==2.8.0

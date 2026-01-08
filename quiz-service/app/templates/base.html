@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Quiz App</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>
+          <a href="/home" id="homeLink">Quiz App</a>
+        </h1>
+
+        <nav>
+          <a href="{{ url_for('history.history') }}">History</a>
+          <span id="userInfo" style="margin-left: 12px; color: #9ad; font-weight: 500; display: none;"></span>
+          <a href="#" id="logoutLink" style="margin-left: 12px; display: none; color: #ff7f7f;" onclick="logout(); return false;">Logout</a>
+        </nav>
+      </header>
+
+      {# show notice passed via query params (no sessions/flash required) #} {%
+      if request.args.get('notice') %}
+      <div class="flash" aria-live="polite">
+        <div class="flash-item {{ request.args.get('notice_category','') }}">
+          {{ request.args.get('notice') }}
+        </div>
+      </div>
+      {% endif %} {% with messages = get_flashed_messages(with_categories=True)
+      %} {% if messages %}
+      <div class="flash" aria-live="polite">
+        {% for category, msg in messages %}
+        <div class="flash-item {% if category %}{{ category }}{% endif %}">
+          {{ msg }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %} {% block content %}{% endblock %}
+    </div>
+
+    <script>
+      // JWT token management
+      function getToken() {
+        return localStorage.getItem('jwt_token');
+      }
+
+      function setToken(token) {
+        localStorage.setItem('jwt_token', token);
+      }
+
+      function removeToken() {
+        localStorage.removeItem('jwt_token');
+      }
+
+      function logout() {
+        removeToken();
+        // Clear Flask session
+        fetch('/set-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: null })
+        }).catch(() => {});
+        window.location.href = '/login';
+      }
+
+      // Check if user is logged in and show user info
+      function updateUserDisplay() {
+        const token = getToken();
+        const userInfo = document.getElementById('userInfo');
+        const logoutLink = document.getElementById('logoutLink');
+        
+        if (token) {
+          try {
+            // Decode JWT (simple base64 decode, no verification needed for display)
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (userInfo && logoutLink) {
+              userInfo.textContent = `👤 ${payload.email || 'User'}`;
+              userInfo.style.display = 'inline';
+              logoutLink.style.display = 'inline';
+            }
+          } catch (e) {
+            // Invalid token, remove it
+            removeToken();
+            if (userInfo && logoutLink) {
+              userInfo.style.display = 'none';
+              logoutLink.style.display = 'none';
+            }
+          }
+        } else {
+          if (userInfo && logoutLink) {
+            userInfo.style.display = 'none';
+            logoutLink.style.display = 'none';
+          }
+        }
+      }
+
+      // Check authentication on page load
+      function checkAuth() {
+        const token = getToken();
+        const currentPath = window.location.pathname;
+        const publicPaths = ['/login', '/register'];
+        const isPublicPath = publicPaths.some(path => currentPath.startsWith(path));
+        
+        // Skip auth check for login/register pages
+        if (isPublicPath) {
+          return true;
+        }
+        
+        if (!token) {
+          // Not logged in - redirect to login
+          window.location.href = '/login';
+          return false;
+        }
+        
+        return true;
+      }
+
+      // Run on page load
+      (function() {
+        if (checkAuth()) {
+          updateUserDisplay();
+        }
+      })();
+
+      // Helper function to make authenticated API calls
+      window.apiCall = async function(url, options = {}) {
+        const token = getToken();
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...options.headers
+        };
+
+        const response = await fetch(url, {
+          ...options,
+          headers
+        });
+
+        if (response.status === 401) {
+          removeToken();
+          window.location.href = '/login';
+          return;
+        }
+
+        return response;
+      };
+    </script>
+  </body>
+</html>

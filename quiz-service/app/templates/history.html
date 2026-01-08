@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block content %}
+<div style="margin-top: 20px">
+  <a class="link" href="{{ url_for('main.home') }}">Return to Home</a>
+</div>
+<h2>All Quiz Attempts</h2>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Category</th>
+        <th>Started</th>
+        <th>Submitted</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for a in attempts %}
+      <tr>
+        <td data-label="ID">{{ a.id }}</td>
+        <td data-label="Category">{{ a.category.name }}</td>
+        <td data-label="Started">{{ a.started_at }}</td>
+        <td data-label="Submitted">
+          {{ a.submitted_at if a.submitted_at else "In Progress" }}
+        </td>
+        <td data-label="Details">
+          {% if a.submitted_at %}
+          <a href="{{ url_for('history.result', attempt_id=a.id) }}">View</a>
+          {% else %} — {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
