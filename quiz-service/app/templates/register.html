@@ -40,6 +40,16 @@
     </div>
     <div id="error" style="color: #ff7f7f; margin-bottom: 12px; display: none"></div>
     <div id="success" style="color: #7cfc98; margin-bottom: 12px; display: none"></div>
+    <div id="sagaStatus" style="color: #87ceeb; margin-bottom: 12px; display: none; font-size: 0.9em;"></div>
+    <div style="margin-bottom: 16px; padding: 12px; background: #1a1a1a; border-radius: 8px; border: 1px solid #2b2b2b;">
+      <label style="display: flex; align-items: center; cursor: pointer;">
+        <input type="checkbox" id="useSaga" style="margin-right: 8px;" />
+        <span style="color: #bbb;">Use Saga Pattern (distributed transaction)</span>
+      </label>
+      <div style="color: #888; font-size: 0.85em; margin-top: 6px; margin-left: 24px;">
+        Creates user in User Service and initializes profile in Quiz Service atomically
+      </div>
+    </div>
     <button type="submit" style="width: 100%">Register</button>
     <div style="margin-top: 16px; text-align: center; color: #bbb">
       Already have an account?
@@ -53,37 +63,117 @@
     e.preventDefault();
     const errorDiv = document.getElementById('error');
     const successDiv = document.getElementById('success');
+    const sagaStatusDiv = document.getElementById('sagaStatus');
+    const useSaga = document.getElementById('useSaga').checked;
+    
     errorDiv.style.display = 'none';
     successDiv.style.display = 'none';
+    sagaStatusDiv.style.display = 'none';
     
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
     try {
-      const response = await fetch('http://localhost:8080/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        errorDiv.textContent = data.error || 'Registration failed';
-        errorDiv.style.display = 'block';
-        return;
+      if (useSaga) {
+        // Use Saga Pattern registration
+        sagaStatusDiv.textContent = '🚀 Starting saga registration...';
+        sagaStatusDiv.style.display = 'block';
+        
+        // Start saga
+        const sagaResponse = await fetch('http://localhost:5003/saga/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        if (!sagaResponse.ok) {
+          const sagaData = await sagaResponse.json();
+          errorDiv.textContent = sagaData.error || 'Failed to start saga';
+          errorDiv.style.display = 'block';
+          sagaStatusDiv.style.display = 'none';
+          return;
+        }
+        
+        const sagaData = await sagaResponse.json();
+        const taskId = sagaData.task_id;
+        
+        sagaStatusDiv.textContent = '⏳ Saga processing... (Step 1: Creating user, Step 2: Initializing profile)';
+        
+        // Poll for saga completion
+        let attempts = 0;
+        const maxAttempts = 30;
+        const pollInterval = setInterval(async () => {
+          attempts++;
+          
+          try {
+            const statusResponse = await fetch(`http://localhost:5003/saga/status/${taskId}`);
+            const statusData = await statusResponse.json();
+            
+            if (statusData.state === 'SUCCESS') {
+              clearInterval(pollInterval);
+              if (statusData.result.status === 'success') {
+                sagaStatusDiv.textContent = '✅ Saga completed successfully!';
+                successDiv.textContent = 'Registration successful! Redirecting to login...';
+                successDiv.style.display = 'block';
+                setTimeout(() => {
+                  window.location.href = '/login';
+                }, 1500);
+              } else {
+                errorDiv.textContent = `Saga failed: ${statusData.result.error || 'Unknown error'}`;
+                errorDiv.style.display = 'block';
+                sagaStatusDiv.style.display = 'none';
+              }
+            } else if (statusData.state === 'FAILURE') {
+              clearInterval(pollInterval);
+              errorDiv.textContent = `Saga failed: ${statusData.error || 'Unknown error'}`;
+              errorDiv.style.display = 'block';
+              sagaStatusDiv.style.display = 'none';
+            } else if (statusData.state === 'PENDING' || statusData.state === 'PROGRESS') {
+              sagaStatusDiv.textContent = `⏳ Saga processing... (${statusData.state})`;
+            }
+          } catch (err) {
+            clearInterval(pollInterval);
+            errorDiv.textContent = 'Failed to check saga status';
+            errorDiv.style.display = 'block';
+            sagaStatusDiv.style.display = 'none';
+          }
+          
+          if (attempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            errorDiv.textContent = 'Saga timed out. Please check saga status manually.';
+            errorDiv.style.display = 'block';
+            sagaStatusDiv.style.display = 'none';
+          }
+        }, 1000);
+        
+      } else {
+        // Regular registration via gateway
+        const response = await fetch('http://localhost:8080/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          errorDiv.textContent = data.error || 'Registration failed';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        
+        successDiv.textContent = 'Registration successful! Redirecting to login...';
+        successDiv.style.display = 'block';
+        
+        // Redirect to login after 1 second
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1000);
       }
-      
-      successDiv.textContent = 'Registration successful! Redirecting to login...';
-      successDiv.style.display = 'block';
-      
-      // Redirect to login after 1 second
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 1000);
     } catch (err) {
       errorDiv.textContent = 'Network error. Please try again.';
       errorDiv.style.display = 'block';
+      sagaStatusDiv.style.display = 'none';
     }
   });
 </script>

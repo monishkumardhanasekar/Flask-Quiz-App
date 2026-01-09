@@ -21,13 +21,16 @@ def create_app():
 
     # Register blueprints
     from app.blueprints.auth import auth_bp
+    from app.blueprints.saga import saga_bp
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(saga_bp)
 
     # Create tables
     with app.app_context():
         db.create_all()
 
     return app
+
 
 

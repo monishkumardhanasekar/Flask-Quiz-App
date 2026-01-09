@@ -23,16 +23,18 @@ def create_app():
 
     db.init_app(app)
 
-    # register blueprints - auth, main, quiz, history
+    # register blueprints - auth, main, quiz, history, saga
     from app.blueprints.auth import auth_bp
     from app.blueprints.main import main_bp
     from app.blueprints.quiz import quiz_bp
     from app.blueprints.history import history_bp
+    from app.blueprints.saga import saga_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(quiz_bp)
     app.register_blueprint(history_bp)
+    app.register_blueprint(saga_bp)
     
     # Root route redirects to login (main page)
     @app.route("/")

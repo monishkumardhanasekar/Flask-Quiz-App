@@ -63,7 +63,19 @@
         body: JSON.stringify({ email, password })
       });
       
-      const data = await response.json();
+      // Check if response is ok before parsing JSON
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        // If JSON parsing fails, it might be a connection error
+        if (!response.ok) {
+          errorDiv.textContent = 'Gateway connection failed. Please ensure the gateway is running on port 8080.';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        throw jsonErr;
+      }
       
       if (!response.ok) {
         errorDiv.textContent = data.error || 'Login failed';
@@ -93,8 +105,14 @@
       // Redirect to home
       window.location.href = '/home';
     } catch (err) {
-      errorDiv.textContent = 'Network error. Please try again.';
+      // Better error handling for connection issues
+      if (err.message && err.message.includes('Failed to fetch')) {
+        errorDiv.textContent = 'Cannot connect to gateway. Please ensure the gateway is running on port 8080.';
+      } else {
+        errorDiv.textContent = 'Network error. Please try again.';
+      }
       errorDiv.style.display = 'block';
+      console.error('Login error:', err);
     }
   });
 </script>

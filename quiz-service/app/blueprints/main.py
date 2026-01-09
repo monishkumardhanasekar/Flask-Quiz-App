@@ -1,12 +1,16 @@
 import random
 import uuid
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, session
+from flask import Blueprint, render_template, redirect, url_for, session, jsonify
 from app.db import db
 from app.models import Category, Question, QuizAttempt
 from app.helpers import get_user_id
 
 main_bp = Blueprint("main", __name__)
+
+@main_bp.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "service": "quiz"}), 200
 
 @main_bp.route("/home")
 def home():

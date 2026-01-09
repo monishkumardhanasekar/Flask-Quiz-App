@@ -23,6 +23,20 @@ class Question(db.Model):
     correct_option = db.Column(db.String(1), nullable=False)  # "A", "B", "C", "D"
 
 
+class UserStats(db.Model):
+    """
+    User statistics - initialized when user registers via saga
+    """
+    __tablename__ = "user_stats"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, unique=True, nullable=False)
+    total_quizzes = db.Column(db.Integer, default=0, nullable=False)
+    total_correct = db.Column(db.Integer, default=0, nullable=False)
+    total_questions = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
 class QuizAttempt(db.Model):
     __tablename__ = "quiz_attempts"
     id = db.Column(db.Integer, primary_key=True)
