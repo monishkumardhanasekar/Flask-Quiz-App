@@ -20,3 +20,4 @@ Runs on port **5001**.
 - `DATABASE_URL` (optional) - defaults to `sqlite:///user_service.db`
 - `JWT_SECRET` (optional) - signing key for JWT (default: dev value, change in prod)
 
+

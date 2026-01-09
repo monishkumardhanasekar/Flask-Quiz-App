@@ -56,17 +56,16 @@ SECRET_KEY=your-secret-key-here
 
 **Important:** Use the same `JWT_SECRET` in both services and gateway!
 
-### 4. Set Up Gateway
+### 4. Set Up Express Gateway
 
 ```bash
 cd ../gateway
 npm install
 ```
 
-Set environment variable (optional, defaults to 'dev-jwt-secret-change-me'):
-```bash
-export JWT_SECRET=dev-jwt-secret-change-me
-```
+The gateway uses Express Gateway framework with configuration in `config/gateway.config.yml`.
+
+**Important:** Update `JWT_SECRET` in `config/gateway.config.yml` to match your services (default: `dev-jwt-secret-change-me`).
 
 ## Running the Application
 
@@ -90,13 +89,12 @@ python run.py
 ```
 Should show: `Running on http://0.0.0.0:5002`
 
-### Terminal 3 - Gateway
+### Terminal 3 - Express Gateway
 ```bash
 cd gateway
-export JWT_SECRET=dev-jwt-secret-change-me
 npm start
 ```
-Should show: `🚀 Gateway running on http://localhost:8080`
+Should show: Express Gateway running on port 8080
 
 ## Accessing the Application
 
@@ -120,5 +118,6 @@ Should show: `🚀 Gateway running on http://localhost:8080`
 - `http://localhost:5002/register` - Register page
 - `http://localhost:5002/home` - Home page (after login)
 - `http://localhost:5002/history` - Quiz history (user-specific)
+
 
 

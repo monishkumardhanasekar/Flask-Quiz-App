@@ -1,0 +1,116 @@
+http:
+  port: 8080
+
+admin:
+  port: 9876
+  host: localhost
+
+apiEndpoints:
+  # Public auth endpoints
+  auth:
+    host: localhost
+    paths:
+      - '/auth/*'
+  
+  # Protected quiz endpoints
+  quiz:
+    host: localhost
+    paths:
+      - '/api/quiz/*'
+  
+  # Protected user endpoints
+  user:
+    host: localhost
+    paths:
+      - '/api/user/*'
+
+serviceEndpoints:
+  # User Service (Flask) - runs on port 5001
+  userService:
+    url: 'http://127.0.0.1:5001'
+  
+  # Quiz Service (Flask) - runs on port 5002
+  quizService:
+    url: 'http://127.0.0.1:5002'
+
+policies:
+  - basic-auth
+  - cors
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+  - jwt
+
+pipelines:
+  # Public authentication pipeline (no JWT required)
+  authPipeline:
+    apiEndpoints:
+      - auth
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              credentials: true
+      - expression:
+          - action:
+              jscode: |
+                req.url = req.url.replace(/^\/auth/, '');
+      - proxy:
+          - action:
+              serviceEndpoint: userService
+              changeOrigin: true
+  
+  # Quiz pipeline (requires JWT validation)
+  quizPipeline:
+    apiEndpoints:
+      - quiz
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              credentials: true
+      - jwt:
+          - action:
+              secretOrPublicKey: 'dev-jwt-secret-change-me'
+              jwtExtractor: 'authBearer'
+              checkCredentialExistence: false
+      - expression:
+          - action:
+              jscode: |
+                if (req.user && req.user.user_id) {
+                  req.headers['x-user-id'] = req.user.user_id.toString();
+                }
+                req.url = req.url.replace(/^\/api\/quiz/, '');
+      - proxy:
+          - action:
+              serviceEndpoint: quizService
+              changeOrigin: true
+  
+  # User profile pipeline (requires JWT validation)
+  userPipeline:
+    apiEndpoints:
+      - user
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              credentials: true
+      - jwt:
+          - action:
+              secretOrPublicKey: 'dev-jwt-secret-change-me'
+              jwtExtractor: 'authBearer'
+              checkCredentialExistence: false
+      - expression:
+          - action:
+              jscode: |
+                if (req.user && req.user.user_id) {
+                  req.headers['x-user-id'] = req.user.user_id.toString();
+                }
+                req.url = req.url.replace(/^\/api\/user/, '');
+      - proxy:
+          - action:
+              serviceEndpoint: userService
+              changeOrigin: true
